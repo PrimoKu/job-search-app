@@ -1,0 +1,218 @@
+<% layout('dashboard') %>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.3.2/css/fixedColumns.dataTables.min.css"/>
+ 
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.3.2/js/dataTables.fixedColumns.min.js"></script>
+
+<div id="board" class="row">
+    <div id="List" class="col-12 p-0 card shadow">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h5 class="m-0 font-weight-bold text-primary">All Job Listings</h5>
+        </div>
+        <div class="card-body">
+            <div id="main" class="row justify-content-start col-12">
+                <div class="table-responsive" id="table_area">
+                    <table class="table table-bordered" id="all_job_table" style="text-align: center;">
+                        <% if(user != null && user.role == 'Job Seeker') {%>
+                        <thead>
+                            <tr>
+                                <th scope="col">Favorite</th>
+                                <th scope="col">Job Title</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Job Type</th>
+                                <th scope="col">Salary</th>
+                                <th scope="col">Last Update</th>
+                                <th scope="col">Details</th>
+                            </tr>
+                        </thead>
+                        <% } else { %>
+                        <thead>
+                            <tr>
+                                <th scope="col">Job Title</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Job Type</th>
+                                <th scope="col">Salary</th>
+                                <th scope="col">Last Update</th>
+                                <th scope="col">Details</th>
+                            </tr>
+                        </thead>
+                        <% } %>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let jobs = JSON.parse('<%- JSON.stringify(jobs).replaceAll("\\r\\n", "") %>');
+    let jobTypes = JSON.parse('<%- JSON.stringify(jobTypes).replaceAll("\\r\\n", "") %>');
+    let jobLocations = JSON.parse('<%- JSON.stringify(jobLocations).replaceAll("\\r\\n", "") %>');
+    
+    let dataTable = null;
+
+    let user = JSON.parse('<%- JSON.stringify(user).replaceAll("\\r\\n", "") %>') ?? null;
+
+    $(document).ready(function () {
+        let displayIndex = [];
+        if (user && user.role === 'Job Seeker') {
+            defaultSortColumn = 6;
+        } else {
+            defaultSortColumn = 5;
+        }
+
+        dataTable = $('#all_job_table').DataTable({
+            "pageLength": 10,
+            "processing": true,
+            "data": jobs,
+            "order": [[defaultSortColumn, "desc"]],
+            "columns": getColumnsByAuth(user),
+            "fnRowCallback": async function (nRow, nData, iDisplayIndex) {
+                displayIndex.push(iDisplayIndex);
+                if(user && user.role == 'Job Seeker') {
+                    if(user.favorites.includes(nData._id)) {
+                        $("td:eq(0)", nRow).html(`<button class="btn" onclick="removeFavorite('${nData._id.toString()}')"><i class="fas fa-star" style="color: #0275d8;"></i></button>`);
+                    } else {
+                        $("td:eq(0)", nRow).html(`<button class="btn" onclick="addFavorite('${nData._id.toString()}')"><i class="far fa-star" ></i></button>`);
+                    }
+                    let location = jobLocations.find(item => item.value === nData.location);
+                    $("td:eq(3)", nRow).text(location.text);
+                    let type = jobTypes.find(item => item.value === nData.job_type);
+                    $("td:eq(4)", nRow).text(type.text);
+                    $(`td:eq(6)`, nRow).text(new Date(nData.updatedAt).toLocaleDateString());
+                    $(`td:eq(7)`, nRow).html('<button type="button" class="details-control"></button>');
+                } else {
+                    // displayIndex.push(iDisplayIndex);
+                    let location = jobLocations.find(item => item.value === nData.location);
+                    $("td:eq(2)", nRow).text(location.text);
+                    let type = jobTypes.find(item => item.value === nData.job_type);
+                    $("td:eq(3)", nRow).text(type.text);
+                    $(`td:eq(5)`, nRow).text(new Date(nData.updatedAt).toLocaleDateString());
+                    $(`td:eq(6)`, nRow).html('<button type="button" class="details-control"></button>');
+                }
+            }
+        });
+
+        $('#all_job_table tbody').on('click', 'button.details-control', function () {
+            let tr = $(this).closest('tr');
+            let row = dataTable.row(tr);
+            let jobDescription = row.data().job_description;
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            }
+            else {
+                row.child(getDetailRow(jobDescription)).show();
+                tr.addClass('shown');
+                row.child().addClass('detail-row');
+            }
+        });
+    });
+
+    function getColumnsByAuth(user) {
+        var columns= [];
+        if(user && user.role == 'Job Seeker'){
+            return [
+                { "data": "", "defaultContent": "" },
+                { "data": "job_title" },
+                { "data": "company" },
+                { "data": "", "defaultContent": "" },
+                { "data": "", "defaultContent": "" },
+                { "data": "salary" },
+                { "data": null, "defaultContent": '' },
+                { "data": null, "defaultContent": '' }
+            ];
+        }
+        else{
+            return [
+                { "data": "job_title" },
+                { "data": "company" },
+                { "data": "", "defaultContent": "" },
+                { "data": "", "defaultContent": "" },
+                { "data": "salary" },
+                { "data": null, "defaultContent": '' },
+                { "data": null, "defaultContent": '' }
+            ];
+        }
+        return columns;
+    }
+
+    function getDetailRow(data) {
+        if(data.length === 0){
+            data.push({});
+        }
+        let jobDetail = '<div class="d-flex" style="overflow-x: auto;">' +
+            '<h6 class="m-0 font-weight-bold text-dark">Job Description:</h5>' + '</div>' +
+            '<div class="d-flex" style="overflow-x: auto;">' + 
+            `<p>${data}</p>` + '</div>';
+
+        return jobDetail;
+    }
+
+    function removeFavorite(job_id) {
+        $.ajax({
+            type: 'PUT',
+            url: `/api/jobs/favorite/remove/${job_id}`,
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (error) {
+                console.log(error.responseJSON);
+                // $('#validation_error').html(error.responseJSON.errors[0].msg);
+            }
+        });
+    }
+
+    function addFavorite(job_id) {
+        $.ajax({
+            type: 'PUT',
+            url: `/api/jobs/favorite/add/${job_id}`,
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (error) {
+                console.log(error.responseJSON);
+                // $('#validation_error').html(error.responseJSON.errors[0].msg);
+            }
+        });
+    }
+
+</script>
+<style>
+    table th,
+    table td {
+        vertical-align: middle !important;
+        padding: .5rem !important;
+    }
+    button.details-control {
+        background-color: transparent;
+        border: none;
+    }
+    button.details-control::after {
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 700;
+        font-size: x-large;
+        content: '\f078';
+        cursor: pointer;
+    }
+    tr.shown button.details-control::after {
+        border: none;
+        content: '\f077';
+    }
+    .bg-transparent * {
+        background-color: transparent !important;
+    }
+
+    .detail-row {
+        background-color: #98423101 !important;
+    }
+</style>
+<!-- <button class="btn btn-primary m-2" type="button" data-toggle="modal" data-target="#addCameraModal">新增攝影機</button> -->
+    

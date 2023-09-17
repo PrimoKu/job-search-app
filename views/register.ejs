@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Register</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="/startbootstrap-sb-admin-2/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="/startbootstrap-sb-admin-2/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="/select2/dist/css/select2.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+
+            <div class="col-xl-10 col-lg-12 col-md-9">
+
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">JBApp - Register</h1>
+                                    </div>
+                                    <form action="/api/users/register" method="post" id="form_user">
+                                        <div class="form-group">
+                                            <input class="form-control form-control-user" name="name"
+                                                placeholder="Name" required>
+                                            <div class="text-warning" id="name_error"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <select class="form-control form-control-user select-placeholder-single " name="role" id="role" required style='width: 100%'>
+                                                <option></option>
+                                                <option value="Employer" >Employer</option>
+                                                <option value="Job Seeker" >Job Seeker</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control form-control-user" name="email"
+                                                placeholder="Email" required>
+                                            <div class="text-danger" id="email_error"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="text-primary">Password must be at least 8 characters long and contain at least one letter and one number</div>
+                                            <input type="password" class="form-control form-control-user"
+                                                name="password" id="password" placeholder="Password" required autocomplete="off">
+                                                <!-- <div class="text-warning" id="password_error"></div> -->
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" class="form-control form-control-user"
+                                                name="password_check" id="password_check" placeholder="Confirm Password" required autocomplete="off">
+                                                <div class="text-warning" id="password_match_error"></div>
+                                        </div>
+                                        <div class="text-danger" id="validation_error"></div>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">Register</button>
+                                    </form>
+                                    <hr>
+                                    <div class="text-center">
+                                        <h6 class="text-dark text-center mt-1">Already have an account? </h6>
+                                        <a class="medium" href="/login">Login</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modelTitle" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal-title">Modal Title</h5>
+                    </div>
+                    <div id="modal-body" class="modal-body">
+                        <p id="modal-content"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="modal-close-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <% include ./components/modal %> -->
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="/startbootstrap-sb-admin-2/vendor/jquery/jquery.min.js"></script>
+    <script src="/startbootstrap-sb-admin-2/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="/startbootstrap-sb-admin-2/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="/startbootstrap-sb-admin-2/js/sb-admin-2.min.js"></script>
+    <script src="/select2/dist/js/select2.min.js"></script>
+
+    <script>
+        $("#password_check").on('input',function(e){
+            let password = $("#password").val();
+            let div_check_match =  $('#password_match_error');
+            if (password!=$(this).val()) {
+                if (div_check_match.hasClass('text-success')) {
+                    div_check_match.removeClass('text-success');
+                    div_check_match.addClass('text-warning');
+                }
+                div_check_match.html("Passwords don't match!");
+            } else {
+                if (div_check_match.hasClass('text-warning')) {
+                    div_check_match.removeClass('text-warning');
+                    div_check_match.addClass('text-success');
+                }
+                div_check_match.html("Passwords matched!");
+            }
+        });
+
+        $('#form_user').submit(function (e) {
+            e.preventDefault();
+
+            let form = $(this);
+            let data = form.serializeObject();
+            let url = form.attr('action');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: form.serializeObject(),
+                dataType: 'json',
+                success: function (data) {
+                    showModal("JBApp", "Register succeed!",  true);
+                },
+                error: function (error) {
+                    console.log(error.responseJSON);
+                    $('#email_error').html(error.responseJSON.email_msg);
+                    $('#validation_error').html(error.responseJSON.errors[0].msg);
+                }
+            });
+        });
+
+        $.fn.serializeObject = function () {
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function () {
+                if (o[this.name]) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
+    </script>
+
+    <script>
+        let modelCancelable = true;
+        $('#modal').on('hide.bs.modal', function (e) {
+            if (!modelCancelable) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+            location.assign('/');
+        })
+
+
+        function showModal(title, content, cancelable = true) {
+            setModalTitle(title)
+            setModalContent(content)
+            modalCancelable = cancelable;
+            $('#modal').modal({
+                keyboard: cancelable,
+                show: true
+            });
+            if (!cancelable) {
+                $('#modal-close-btn').hide();
+            } else {
+                $('#modal-close-btn').show();
+            }
+        }
+
+        function setModalTitle(title) {
+            $('#modal-title').html(title);
+        }
+
+        function setModalContent(content) {
+            $('#modal-content').html(content);
+        }
+    </script>
+
+    <script>
+        $(".select-placeholder-single").select2({
+            placeholder: "Select your role",
+            allowClear: true
+        });
+    </script>
+</body>
+
+</html>

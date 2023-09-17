@@ -1,0 +1,51 @@
+<script>
+    let modelCancelable = true;
+    $('#modal').on('hide.bs.modal', function (e) {
+        if (!modelCancelable) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    })
+
+
+    function showModal(title, content, cancelable = true) {
+        setModalTitle(title)
+        setModalContent(content)
+        modalCancelable = cancelable;
+        $('#modal').modal({
+            keyboard: cancelable,
+            show: true
+        });
+        if (!cancelable) {
+            $('#modal-close-btn').hide();
+        } else {
+            $('#modal-close-btn').show();
+        }
+    }
+
+    function setModalTitle(title) {
+        $('#modal-title').html(title);
+    }
+
+    function setModalContent(content) {
+        $('#modal-content').html(content);
+    }
+
+</script>
+
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modelTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">Modal Title</h5>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <p id="modal-content"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-close-btn" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,496 @@
+<% layout('dashboard') %>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/3.3.2/css/fixedColumns.dataTables.min.css"/>
+ 
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/3.3.2/js/dataTables.fixedColumns.min.js"></script>
+
+<div id="UserCard" class="col-12 p-0 card shadow mb-3">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h5 class="m-0 font-weight-bold text-primary">
+            Hello, <%- user.role %> <%- user.name %> 
+            <i class="fas fa-laugh-wink"></i>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div id="main" class="row justify-content-start col-12">
+        <% if(user.role == 'Employer') {%>
+            <a class="btn btn-primary" role="button" data-toggle="modal" data-target="#jobCreateModal">Post New Job</a>
+        <% } else { %>
+            <!-- <a class="btn btn-primary" role="button" data-toggle="modal" data-target=""></a> -->
+        <% } %>
+        </div>
+    </div>
+</div>
+
+<div id="List" class="col-12 p-0 card shadow">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <% if(user.role == 'Employer') {%>
+            <h5 class="m-0 font-weight-bold text-primary">Your Job Listings</h5>
+        <% } else { %>
+            <h5 class="m-0 font-weight-bold text-primary">Your Favorite Jobs</h5>
+        <% } %>
+    </div>
+    <div class="card-body">
+        <div id="main" class="row justify-content-start col-12">
+            <div class="table-responsive" id="table_area">
+                <table class="table table-bordered" id="my_job_table" style="text-align: center;">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th scope="col">Job Title</th>
+                            <th scope="col">Company</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Job Type</th>
+                            <th scope="col">Salary</th>
+                            <th scope="col">Last Update</th>
+                            <th scope="col">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="jobCreateModal" tabindex="-1" role="dialog" aria-labelledby="modelTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Job Create</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <div class="modal-body">
+                    <form id="job_create_form" action="">
+                        <div class="form-group">
+                            <label class="col-form-label">Job Title</label>
+                            <input type="text" class="form-control" name="job_title" required>
+                            <!-- <div class="text-warning" id="errors"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Job Description</label>
+                            <textarea type="text" class="form-control" name="job_description" rows="5" required></textarea>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Company</label>
+                            <input type="text" class="form-control" name="company" required>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Location</label>
+                            <select class="form-control form-control-user" name="location" required style='width: 100%'>
+                                <option value="<%- jobLocations[0].value %>" ><%- jobLocations[0].text %></option>
+                                <option value="<%- jobLocations[1].value %>" ><%- jobLocations[1].text %></option>
+                            </select>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Job Type</label>
+                            <select class="form-control form-control-user" name="job_type" required style='width: 100%'>
+                                <option value="<%- jobTypes[0].value %>" ><%- jobTypes[0].text %></option>
+                                <option value="<%- jobTypes[1].value %>" ><%- jobTypes[1].text %></option>
+                                <option value="<%- jobTypes[2].value %>" ><%- jobTypes[2].text %></option>
+                            </select>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Salary</label>
+                            <input type="text" class="form-control" name="salary" required>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="text-danger mt-3" id="validation_error"></div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" form="job_create_form" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="jobUpdateModal" tabindex="-1" role="dialog" aria-labelledby="modelTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Job Update</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <div class="modal-body">
+                    <form id="job_update_form" action="">
+                        <div class="form-group" hidden>
+                            <label class="col-form-label">Id</label>
+                            <input type="text" class="form-control" name="id" required readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Job Title</label>
+                            <input type="text" class="form-control" name="job_title" required>
+                            <!-- <div class="text-warning" id="errors"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Job Description</label>
+                            <textarea type="text" class="form-control" name="job_description" rows="5" required></textarea>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Company</label>
+                            <input type="text" class="form-control" name="company" required>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Location</label>
+                            <select class="form-control form-control-user" name="location" required style='width: 100%'>
+                                <option value="<%- jobLocations[0].value %>" ><%- jobLocations[0].text %></option>
+                                <option value="<%- jobLocations[1].value %>" ><%- jobLocations[1].text %></option>
+                            </select>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Job Type</label>
+                            <select class="form-control form-control-user" name="job_type" required style='width: 100%'>
+                                <option value="<%- jobTypes[0].value %>" ><%- jobTypes[0].text %></option>
+                                <option value="<%- jobTypes[1].value %>" ><%- jobTypes[1].text %></option>
+                                <option value="<%- jobTypes[2].value %>" ><%- jobTypes[2].text %></option>
+                            </select>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <div class="form-group">
+                            <label for="salary" class="col-form-label">Salary</label>
+                            <input type="text" class="form-control" name="salary" required>
+                            <!-- <div class="text-warning" id="modify_password_match_error"></div> -->
+                        </div>
+                        <!-- <div class="text-danger mt-3" id="validation_error"></div> -->
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" form="job_update_form" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeJobModal" tabindex="-1" role="dialog" aria-labelledby="removeJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Delete Job</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button id="deleteJobButton" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let jobs = JSON.parse('<%- JSON.stringify(jobs).replaceAll("\\r\\n", "") %>');
+    let jobTypes = JSON.parse('<%- JSON.stringify(jobTypes).replaceAll("\\r\\n", "") %>');
+    let jobLocations = JSON.parse('<%- JSON.stringify(jobLocations).replaceAll("\\r\\n", "") %>');
+
+    let user = JSON.parse('<%- JSON.stringify(user).replaceAll("\\r\\n", "") %>');
+
+    let dataTable = null;
+
+    $(document).ready(function () {
+        let displayIndex = [];
+        dataTable = $('#my_job_table').DataTable({
+            "pageLength": 10,
+            "processing": true,
+            "data": jobs,
+            "order": [[6, "desc"]],
+            "columns": getColumnsByAuth(user),
+            "fnRowCallback": async function (nRow, nData, iDisplayIndex) {
+                displayIndex.push(iDisplayIndex);
+
+                if(user.role == 'Employer') {
+                    $(`td:eq(0)`, nRow).html(`<a class="btn btn-primary mr-2" role="button" data-toggle="modal" data-target="#jobUpdateModal" 
+                                                data-id="${nData._id.toString()}" data-title="${nData.job_title}" data-description="${nData.job_description}"
+                                                data-company="${nData.company}" data-location="${nData.location}" data-type="${nData.job_type}" 
+                                                data-salary="${nData.salary}" >Update</a>` + 
+                                                `<a class="btn btn-danger ml-2" role="button" data-toggle="modal" data-target="#removeJobModal" 
+                                                data-id="${nData._id.toString()}" data-title="${nData.job_title}">Delete</a>`)
+                } else {
+                    $(`td:eq(0)`, nRow).html(`<button class="btn" onclick="removeFavorite('${nData._id.toString()}')"><i class="fas fa-star" style="color: #0275d8;"></i></button>`)
+                }
+
+                let location = jobLocations.find(item => item.value === nData.location);
+                $("td:eq(3)", nRow).text(location.text);
+                let type = jobTypes.find(item => item.value === nData.job_type);
+                $("td:eq(4)", nRow).text(type.text);
+                $(`td:eq(6)`, nRow).text(new Date(nData.updatedAt).toLocaleDateString());
+                $(`td:eq(7)`, nRow).html('<button type="button" class="details-control"></button>');
+            }
+        });
+
+        $('#my_job_table tbody').on('click', 'button.details-control', function () {
+            let tr = $(this).closest('tr');
+            let row = dataTable.row(tr);
+            let jobDescription = row.data().job_description;
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            }
+            else {
+                row.child(getDetailRow(jobDescription)).show();
+                tr.addClass('shown');
+                row.child().addClass('detail-row');
+            }
+        });
+    });
+
+    function getColumnsByAuth(user) {
+        var columns= [];
+        if(user && user.role == 'Job Seeker'){
+            return [
+                { "data": "", "defaultContent": "" },
+                { "data": "job_title" },
+                { "data": "company" },
+                { "data": "", "defaultContent": "" },
+                { "data": "", "defaultContent": "" },
+                { "data": "salary" },
+                { "data": null, "defaultContent": '' },
+                { "data": null, "defaultContent": '' }
+            ];
+        }
+        else{
+            return [
+                { "data": "", "defaultContent": "" },
+                { "data": "job_title" },
+                { "data": "company" },
+                { "data": "", "defaultContent": "" },
+                { "data": "", "defaultContent": "" },
+                { "data": "salary" },
+                { "data": null, "defaultContent": '' },
+                { "data": null, "defaultContent": '' }
+            ];
+        }
+        return columns;
+    }
+
+    function getDetailRow(data) {
+        if(data.length === 0){
+            data.push({});
+        }
+        let jobDetail = '<div class="d-flex" style="overflow-x: auto;">' +
+            '<h6 class="m-0 font-weight-bold text-dark">Job Description:</h5>' + '</div>' +
+            '<div class="d-flex" style="overflow-x: auto;">' + 
+            `<p>${data}</p>` + '</div>';
+
+        return jobDetail;
+    }
+
+    function deleteJob(job_id) {
+        console.log(job_id);
+        $.ajax({
+            type: 'DELETE',
+            url: `/api/jobs/${job_id}`,
+            success: function (data) {
+                showModal("Delete Job", "Succeed!",  true);
+            },
+            error: function (error) {
+                console.log(error.responseJSON);
+            }
+        });
+    }
+
+    function removeFavorite(job_id) {
+        $.ajax({
+            type: 'PUT',
+            url: `/api/jobs/favorite/remove/${job_id}`,
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (error) {
+                console.log(error.responseJSON);
+            }
+        });
+    }
+</script>
+
+<!-- Job Create Modal -->
+<script>
+    $('#job_create_form').submit(function (e) {
+        e.preventDefault();
+        let form = $(this);
+        let data = $(this).serializeObject();
+        console.log(data);
+
+        $.ajax({
+            type: 'POST',
+            url: `/api/jobs`,
+            data: data,
+            success: function (data) {
+                showModal("Create New Job", "Succeed!",  true);
+            },
+            error: function (error) {
+                console.log(error.responseJSON);
+                $('#validation_error').html(error.responseJSON.errors[0].msg);
+            }
+        });
+    });
+</script>
+
+<!-- Job Update Modal -->
+<script>
+    $('#jobUpdateModal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget) // Button that triggered the modal
+        let id = button.data('id');
+        let title = button.data('title');
+        let description = button.data('description');
+        let company = button.data('company');
+        let location = button.data('location');
+        let type = button.data('type');
+        let salary = button.data('salary');     
+        let modal = $(this);
+        modal.find("input[name='id']").val(id);
+        modal.find("input[name='job_title']").val(title);
+        modal.find("textarea[name='job_description']").val(description);
+        modal.find("input[name='company']").val(company);
+        modal.find("select[name='location']").val(location);
+        modal.find("select[name='job_type']").val(type);
+        modal.find("input[name='salary']").val(salary);
+    });
+
+    $('#job_update_form').submit(function (e) {
+        e.preventDefault();
+        let form = $(this);
+        let data = $(this).serializeObject();
+        console.log(data);
+
+        $.ajax({
+            type: 'PUT',
+            url: `/api/jobs/${data.id}`,
+            data: data,
+            success: function (data) {
+                showModal("Update Job", "Succeed!",  true);
+            },
+            error: function (error) {
+                console.log(error.responseJSON);
+                $('#validation_error').html(error.responseJSON.errors[0].msg);
+            }
+        });
+    });
+
+    $.fn.serializeObject = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+</script>
+
+<!-- Job Delete Modal -->
+<script>
+    $('#removeJobModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget) // Button that triggered the modal
+        const id = button.data('id');
+        const title = button.data('title');
+        const modal = $(this);
+        modal.find('.modal-body').text('Are you sure you want to delete the job: ' + title);
+        $("#deleteJobButton").click(function(){
+  	        deleteJob(id);
+        });
+    });
+    $('#removeJobModal').on('hide.bs.modal', function (e) {
+        if (!modelCancelable) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    })
+</script>
+
+<!-- Modal -->
+<script>
+    $('#modal').on('hide.bs.modal', function (e) {
+        if (!modelCancelable) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    })
+
+    function showModal(title, content, cancelable = true) {
+        setModalTitle(title)
+        setModalContent(content)
+        modalCancelable = cancelable;
+        $('#modal').modal({
+            keyboard: cancelable,
+            show: true
+        });
+        if (!cancelable) {
+            $('#modal-close-btn').hide();
+        } else {
+            $('#modal-close-btn').show();
+        }
+    }
+
+    function setModalTitle(title) {
+        $('#modal-title').html(title);
+    }
+
+    function setModalContent(content) {
+        $('#modal-content').html(content);
+    }
+</script>
+
+<style>
+    table th,
+    table td {
+        vertical-align: middle !important;
+        padding: .5rem !important;
+    }
+    button.details-control {
+        background-color: transparent;
+        border: none;
+    }
+    button.details-control::after {
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 700;
+        font-size: x-large;
+        content: '\f078';
+        cursor: pointer;
+    }
+    tr.shown button.details-control::after {
+        border: none;
+        content: '\f077';
+    }
+    .bg-transparent * {
+        background-color: transparent !important;
+    }
+
+    .detail-row {
+        background-color: #98423101 !important;
+    }
+</style>
+<!-- <button class="btn btn-primary m-2" type="button" data-toggle="modal" data-target="#addCameraModal">新增攝影機</button> -->
+    
