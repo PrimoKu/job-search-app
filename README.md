@@ -50,7 +50,7 @@ JBApp is an web application designed to bridge the gap between dedicated job see
 ### Cloning the Repository:
 Clone the repository using the command:
 ```bash
-git clone https://github.com/jhu-oose-f23/homework-1-PrimoKu.git
+git clone https://github.com/PrimoKu/job-search-app.git
 ```
 
 <!-- ### Technologies Used:
